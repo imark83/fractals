@@ -3,13 +3,16 @@
 #include <stdlib.h>
 
 
-#define MAXITER		256
+#define MVX		0.01
+#define MVY		-0.015
+
+#define MAXITER		50
 #define WIDTH		1024
 #define HEIGHT		1024
-#define XMIN		-2.0
-#define XMAX		1.0
-#define YMIN		-1.5
-#define YMAX		1.7
+#define XMIN		-1.84
+#define XMAX		-1.71
+#define YMIN		-0.0775
+#define YMAX		0.0475
 
 
 double norm (double x, double y) {
@@ -52,14 +55,14 @@ void main () {
 				zx = temp;
 				k++;
 			}
-			image[WIDTH*(HEIGHT-j-1) + i] = palette[k];
+			image[WIDTH*(HEIGHT-j-1) + i] = k;
 		}
 	}
 
 	int j;
 	for (j=0; j<HEIGHT; j++) {	
 		for (i=0; i<WIDTH; i++)
-			printf ("%i  ", image[WIDTH*j + i] / MAXITER);
+			printf ("%le  ", 1.0 - (float) (image[WIDTH*j+i]) / MAXITER);
 		printf ("\n");
 	}
 
