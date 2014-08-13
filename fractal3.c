@@ -7,6 +7,7 @@
 
 #define WIDTH		1024
 #define HEIGHT		1024
+#define NPOINTS		10000000
 #define XMIN		-2.0
 #define XMAX		1.0
 #define YMIN		-1.5
@@ -41,54 +42,44 @@ void compPow (complex_t *rop, complex_t op1, int op2);
 void getIJ (int *i, int *j, double x, double y) {
 	*i = (int) floor ((x - XMIN) * (WIDTH - 1.0) / (XMAX - XMIN));
 	*j = (int) floor ((y - YMIN) * (HEIGHT - 1.0) / (YMAX - YMIN));
-	//printf ("x = %e, y = %e\n", x, y);
-	//printf ("i = %i, j = %i\n", *i, *j);
-	fflush (stdout);
 }
 
 double getRand (double a, double b) {
 	return a + (((double) rand()) / RAND_MAX) * (b - a);
-
 }
 
 
 void main () {
 
-	unsigned char *image;
-	image = (unsigned char*) malloc (WIDTH * HEIGHT * sizeof (unsigned char));
+	unsigned int *image;
+	image = (unsigned int*) malloc (WIDTH * HEIGHT * sizeof (unsigned int));
 
 
 	int i;		// COUNTER FOR WIDTH
 
 #pragma omp parallel for
-	for (i=0; i<WIDTH; i++) {
-		int j;	// COUNTER FOR HEIGHT
-		int k;	// COUNTER FOR NEWTON ITERATION
-		for (j=0; j<HEIGHT; j++) {
-			double aux_real;
-			double cx = getRand (XMIN, XMAX); //XMIN + i * (XMAX-XMIN) / (WIDTH - 1.0);
-			double cy = getRand (YMIN, YMAX); //YMIN + j * (YMAX-YMIN) / (HEIGHT - 1.0);
-			double x = 0.0;
-			double y = 0.0;
-			unsigned char count = 0;
-			do {
-				if (count == 256) break;
-				count++;
-				N (&x, &y, cx, cy);
-				int I, J;
-				getIJ (&I, &J, x, y);
-				if (I>=0 && I < WIDTH && J>=0 && J < HEIGHT) 
-					IMAGE(I,J)++;
-			} while (norm (x, y) < 4.0);
-
-		}
+	for (i=0; i<NPOINTS; i++) {
+		double cx = getRand (XMIN, XMAX); //XMIN + i * (XMAX-XMIN) / (WIDTH - 1.0);
+		double cy = getRand (YMIN, YMAX); //YMIN + j * (YMAX-YMIN) / (HEIGHT - 1.0);
+		double x = 0.0;
+		double y = 0.0;
+		unsigned int count = 0;
+		do {
+			if (count == 100000) break;
+			count++;
+			N (&x, &y, cx, cy);
+			int I, J;
+			getIJ (&I, &J, x, y);
+			if (I>=0 && I < WIDTH && J>=0 && J < HEIGHT) 
+				IMAGE(I,J)++;
+		} while (norm (x, y) < 4.0);
 
 	}
 
 	int j;
 	for (j=0; j<HEIGHT; j++) {	
 		for (i=0; i<WIDTH; i++)
-			printf ("%hhu  ", IMAGE(i,j));
+			printf ("%u  ", IMAGE(i,j));
 		printf ("\n");
 	}
 
@@ -109,17 +100,6 @@ void N (double *x, double *y, double cx, double cy) {
 double norm (double x, double y) {
 	return sqrt (x*x+y*y);
 }
-
-char getColor (double x, double y) {
-	if (norm (x, y) < 0.001) return 1;
-	if (norm (x+0.5, y-SIN60) < 0.001) return 2;
-	if (norm (x+0.5, y+SIN60) < 0.001) return 3;
-	if (norm (x-1.0, y) < 0.001) return 4;
-
-	return 0;
-
-}
-
 
 
 
